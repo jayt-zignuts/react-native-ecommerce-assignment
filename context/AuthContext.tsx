@@ -6,6 +6,7 @@ type User = {
   name: string;
   token: string;
   profileImage?: string;
+  address?: string;
 };
 
 type AuthContextType = {
@@ -24,6 +25,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 const AUTH_KEY = 'AUTH_TOKEN';
 
+// Mock users
 const mockUsers = [
   { email: 'test@zignuts.com', password: '123456', name: 'Test User' },
   { email: 'practical@zignuts.com', password: '123456', name: 'Practical User' },
@@ -35,9 +37,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     (async () => {
-      const savedUser = await AsyncStorage.getItem(AUTH_KEY);
-      if (savedUser) setUser(JSON.parse(savedUser));
-      setLoading(false);
+      try {
+        const savedUser = await AsyncStorage.getItem(AUTH_KEY);
+        if (savedUser) setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Failed to load user:', error);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
@@ -46,15 +53,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!found) throw new Error('Invalid credentials');
 
     const token = `token-${Date.now()}`;
-    const payload: User = { ...found, token, profileImage: `https://i.pravatar.cc/150` };
-    await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(payload));
-    setUser(payload);
+    const payload: User = {
+      ...found,
+      token,
+      profileImage: `https://i.pravatar.cc/150`,
+      address: found.address || '',
+    };
+
+    try {
+      await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(payload));
+      setUser(payload);
+    } catch (error) {
+      console.error('Failed to save user:', error);
+      throw new Error('Login failed, please try again');
+    }
   };
 
-  const logout = async () => {
+const logout = async () => {
+  try {
     await AsyncStorage.removeItem(AUTH_KEY);
     setUser(null);
-  };
+  } catch (error) {
+    console.error("Failed to logout:", error);
+  }
+};
+
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout }}>

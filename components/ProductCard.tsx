@@ -1,9 +1,17 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from '@/hooks/useCart';
+import { useFavorites } from "@/hooks/useFavorites";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
-import { Image, StyleSheet, Text, ToastAndroid, TouchableOpacity, View } from "react-native";
+import {
+    Image,
+    StyleSheet,
+    Text,
+    ToastAndroid,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { Product } from "../api/products";
 
 type Props = {
@@ -15,32 +23,45 @@ type Props = {
 const ProductCard = ({ item, onPress, onAddToCart }: Props) => {
   const { user } = useAuth();
   const router = useRouter();
-const { addToCart, items } = useCart();
+  const { addToCart, items } = useCart();
+  const { toggleFavorite, isFavorite } = useFavorites(); 
 
-  const isInCart = items.some(ci => ci.id === item.id);
+  const isInCart = items.some((ci) => ci.id === item.id);
+  const favStatus = isFavorite(item.id);
 
   const rating = item.rating ?? { rate: 0, count: 0 };
 
   const handleCardPress = () => {
-    console.log("Product card clicked...", item.id);
-    onPress?.();
+    router.push(`/product/${item.id}`);
   };
 
-const handleAddToCart = () => {
-  if (!user) {
-    router.push('/login');
-    return;
-  }
+  const handleAddToCart = () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
-  if (isInCart) {
-    ToastAndroid.show('Item already in cart!', ToastAndroid.SHORT);
-  } else {
-    addToCart(item);
-    ToastAndroid.show('Item added to cart!', ToastAndroid.SHORT);
-    onAddToCart?.();
-    console.log('Item added', item);
-  }
-};
+    if (isInCart) {
+      ToastAndroid.show("Item already in cart!", ToastAndroid.SHORT);
+    } else {
+      addToCart(item);
+      ToastAndroid.show("Item added to cart!", ToastAndroid.SHORT);
+      onAddToCart?.();
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    await toggleFavorite(item.id);
+    ToastAndroid.show(
+      favStatus ? "Removed from favourites" : "Added to favourites",
+      ToastAndroid.SHORT
+    );
+  };
+
   const showRatingBadge = rating.rate > 4.0;
   const showFreeShipping = item.price > 50;
 
@@ -74,10 +95,8 @@ const handleAddToCart = () => {
       onPress={handleCardPress}
       activeOpacity={0.9}
     >
-      {/* Card Edge Accent */}
       <View style={styles.cardAccent} />
 
-      {/* Image Container with Category Tag */}
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: item.image }}
@@ -85,12 +104,10 @@ const handleAddToCart = () => {
           resizeMode="contain"
         />
 
-        {/* Category Badge */}
         <View style={styles.categoryBadge}>
           <Text style={styles.categoryText}>{item.category.toUpperCase()}</Text>
         </View>
 
-        {/* Rating Badge */}
         {showRatingBadge && (
           <View style={styles.ratingBadge}>
             <Ionicons name="star" size={10} color="#FFFFFF" />
@@ -99,14 +116,22 @@ const handleAddToCart = () => {
         )}
       </View>
 
-      {/* Product Details */}
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
           <Text style={styles.title} numberOfLines={2}>
             {item.title}
           </Text>
-          <TouchableOpacity style={styles.wishlistButton}>
-            <Ionicons name="heart-outline" size={20} color="#666" />
+
+          {/* ✅ Favourite Button */}
+          <TouchableOpacity
+            style={styles.wishlistButton}
+            onPress={handleToggleFavorite}
+          >
+            <Ionicons
+              name={favStatus ? "heart" : "heart-outline"}
+              size={20}
+              color={favStatus ? "red" : "#666"}
+            />
           </TouchableOpacity>
         </View>
 
@@ -119,33 +144,32 @@ const handleAddToCart = () => {
           {item.description}
         </Text>
 
-        {/* Footer with Price and Action */}
         <View style={styles.footer}>
           <View>
-            <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+            <Text style={styles.price}>₹{item.price.toFixed(2)}</Text>
             {showFreeShipping && (
               <Text style={styles.shippingText}>Free Shipping</Text>
             )}
           </View>
-          <TouchableOpacity
-  style={styles.addToCartButton}
-  onPress={handleAddToCart}
->
-  <Ionicons
-    name={isInCart ? "checkmark-circle" : "add-circle"}
-    size={24}
-    color={isInCart ? "#2E8B57" : "#000000"}
-  />
-</TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.addToCartButton}
+            onPress={handleAddToCart}
+          >
+            <Ionicons
+              name={isInCart ? "checkmark-circle" : "add-circle"}
+              size={24}
+              color={isInCart ? "#2E8B57" : "#000000"}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
   );
 };
 
-// Memoize for FlatList optimization
 export default React.memo(ProductCard);
+
 
 const styles = StyleSheet.create({
   card: {

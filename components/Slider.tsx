@@ -5,15 +5,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    ToastAndroid,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -158,7 +158,7 @@ const handleAddToCart = (product: Product) => {
         </View>
 
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+          <Text style={styles.price}>₹{product.price.toFixed(2)}</Text>
           <TouchableOpacity onPress={() => handleAddToCart(product)}>
             <Ionicons
               name={isInCart ? "checkmark-circle" : "add-circle"}

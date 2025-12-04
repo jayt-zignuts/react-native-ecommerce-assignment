@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "react-native-ecommerce",
-    "slug": "react-native-ecommerce",
+     "name": "STORE X",
+    "slug": "store-x",
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "reactnativeecommerce",

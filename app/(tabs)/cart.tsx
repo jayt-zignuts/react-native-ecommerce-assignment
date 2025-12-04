@@ -1,16 +1,18 @@
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
+import { useOrders } from '@/hooks/useOrders';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
   Alert,
   FlatList,
   Image,
+  Platform,
   StyleSheet,
   Text,
+  ToastAndroid,
   TouchableOpacity,
   View
 } from 'react-native';
@@ -18,54 +20,52 @@ import {
 const Cart = () => {
   const { items, removeFromCart, clearCart, totalPrice } = useCart();
   const { user } = useAuth();
+  const { addOrder } = useOrders(); 
+
   const router = useRouter();
 
-  const handlePlaceOrder = async () => {
-    if (items.length === 0) {
-      Alert.alert('Cart Empty', 'Add items to cart before placing an order');
-      return;
-    }
+  const showToast = (message: string) => {
+  if (Platform.OS === 'android') {
+    ToastAndroid.show(message, ToastAndroid.SHORT);
+  } else {
+    console.log('Toast:', message);
+  }
+};
 
-    try {
-      // Create order object
-      const order = {
-        id: Date.now().toString(),
-        date: new Date().toISOString(),
-        items: items,
-        totalPrice: totalPrice,
-        userEmail: user?.email || 'guest',
-        status: 'pending'
-      };
+const handlePlaceOrder = async () => {
+  if (items.length === 0) {
+    showToast('Cart is empty. Add items before placing an order.');
+    return;
+  }
 
-      // Save to AsyncStorage
-      const existingOrders = await AsyncStorage.getItem('ORDERS');
-      const orders = existingOrders ? JSON.parse(existingOrders) : [];
-      orders.unshift(order); // Add new order at beginning
-      await AsyncStorage.setItem('ORDERS', JSON.stringify(orders));
+  try {
+    const orderData = {
+      items: items.map(item => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        image: item.image,
+      })),
+      totalPrice: totalPrice,
+      userEmail: user?.email || 'guest',
+    };
 
-      // Clear cart
-      clearCart();
+    // Add order using context - it now returns the created order
+    const newOrder = await addOrder(orderData);
 
-      // Show success message
-      Alert.alert(
-        'Order Placed!',
-        `Your order #${order.id.slice(-6)} has been placed successfully.`,
-        [
-          {
-            text: 'View Orders',
-            onPress: () => router.push('/orders')
-          },
-          {
-            text: 'Continue Shopping',
-            onPress: () => router.push('/')
-          }
-        ]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to place order. Please try again.');
-      console.error('Order placement error:', error);
-    }
-  };
+    // Clear cart
+    clearCart();
+
+    // Show success toast
+    showToast(`Order #${newOrder.id.slice(-6)} placed successfully!`);
+
+    // Navigate to orders
+    router.push('/orders');
+  } catch (error) {
+    showToast('Failed to place order. Please try again.');
+    console.error('Order placement error:', error);
+  }
+};
 
   const renderCartItem = ({ item }: { item: any }) => (
     <View style={styles.cartItem}>
@@ -73,7 +73,7 @@ const Cart = () => {
       
       <View style={styles.itemDetails}>
         <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
-        <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+        <Text style={styles.itemPrice}>₹{item.price.toFixed(2)}</Text>
         
         <View style={styles.itemActions}>
           <TouchableOpacity
@@ -136,7 +136,7 @@ const Cart = () => {
         <View style={styles.summaryContainer}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>${totalPrice.toFixed(2)}</Text>
+            <Text style={styles.summaryValue}>₹{totalPrice.toFixed(2)}</Text>
           </View>
           
           <View style={styles.summaryRow}>
@@ -149,14 +149,14 @@ const Cart = () => {
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Tax</Text>
             <Text style={styles.summaryValue}>
-              ${(totalPrice * 0.08).toFixed(2)}
+              ₹{(totalPrice * 0.08).toFixed(2)}
             </Text>
           </View>
           
           <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total</Text>
             <Text style={styles.totalValue}>
-              ${(totalPrice + (totalPrice > 50 ? 0 : 5) + (totalPrice * 0.08)).toFixed(2)}
+              ₹{(totalPrice + (totalPrice > 50 ? 0 : 5) + (totalPrice * 0.08)).toFixed(2)}
             </Text>
           </View>
           

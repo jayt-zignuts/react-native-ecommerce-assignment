@@ -1,14 +1,15 @@
+import { useAuth } from '@/hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useEffect, useState } from 'react';
 
-type CartItem = {
+export type CartItem = {
   id: number;
   title: string;
   price: number;
   image: string;
 };
 
-type CartContextType = {
+export type CartContextType = {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: number) => void;
@@ -27,34 +28,38 @@ export const CartContext = createContext<CartContextType>({
 const CART_KEY = 'CART_ITEMS';
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Load cart from AsyncStorage on mount
+  // Load cart from AsyncStorage
   useEffect(() => {
-    (async () => {
-      const saved = await AsyncStorage.getItem(CART_KEY);
-      if (saved) setItems(JSON.parse(saved));
-    })();
-  }, []);
+    if (user) {
+      (async () => {
+        const saved = await AsyncStorage.getItem(CART_KEY);
+        if (saved) setItems(JSON.parse(saved));
+      })();
+    } else {
+      setItems([]); // clear cart on logout
+    }
+  }, [user]);
 
-  // Save cart to AsyncStorage whenever it changes
+  // Save cart to AsyncStorage
   useEffect(() => {
     AsyncStorage.setItem(CART_KEY, JSON.stringify(items));
   }, [items]);
 
   const addToCart = (product: CartItem) => {
-    setItems(prev => {
-      // Avoid duplicates
-      if (prev.find(p => p.id === product.id)) return prev;
-      return [...prev, product];
-    });
+    setItems(prev => (prev.find(p => p.id === product.id) ? prev : [...prev, product]));
   };
 
   const removeFromCart = (id: number) => {
     setItems(prev => prev.filter(p => p.id !== id));
   };
 
-  const clearCart = () => setItems([]);
+  const clearCart = () => {
+    setItems([]);
+    AsyncStorage.removeItem(CART_KEY);
+  };
 
   const totalPrice = items.reduce((sum, item) => sum + item.price, 0);
 
