@@ -19,15 +19,10 @@ export const FavProvider = ({ children }: { children: ReactNode }) => {
   const [favorites, setFavorites] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load favorites on user login
+  // Load favorites from AsyncStorage
   useEffect(() => {
-    if (user) {
-      loadFavorites();
-    } else {
-      setFavorites([]); // clear favorites on logout
-      setLoading(false);
-    }
-  }, [user]);
+    loadFavorites();
+  }, []);
 
   const loadFavorites = async () => {
     try {

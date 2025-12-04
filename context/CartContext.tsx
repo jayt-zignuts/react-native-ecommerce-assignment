@@ -33,15 +33,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Load cart from AsyncStorage
   useEffect(() => {
-    if (user) {
-      (async () => {
-        const saved = await AsyncStorage.getItem(CART_KEY);
-        if (saved) setItems(JSON.parse(saved));
-      })();
-    } else {
-      setItems([]); // clear cart on logout
-    }
-  }, [user]);
+    (async () => {
+      const saved = await AsyncStorage.getItem(CART_KEY);
+      if (saved) setItems(JSON.parse(saved));
+    })();
+  }, []);
 
   // Save cart to AsyncStorage
   useEffect(() => {

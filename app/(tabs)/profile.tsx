@@ -20,17 +20,14 @@ import {
 } from "react-native";
 
 const Profile = () => {
-  const { user, logout } = useAuth();
-  const { items: cartItems, clearCart} = useCart();
-  const { favorites, clearFavorites } = useFavorites();
+  const { user, logout, updateProfile } = useAuth();
+  const { items: cartItems } = useCart();
+  const { favorites } = useFavorites();
   const { orders } = useOrders();
   const router = useRouter();
 
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [userName, setUserName] = useState(user?.name || "Guest User");
-  const [userAddress, setUserAddress] = useState(
-    "123 Main St, New York, NY 10001"
-  );
+  const [editMode, setEditMode] = useState<'name' | 'address'>('name');
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -40,8 +37,6 @@ const Profile = () => {
         style: "destructive",
         onPress: async () => {
           await logout();
-          clearCart();
-          await clearFavorites();
           router.replace("/");
         },
       },
@@ -51,6 +46,7 @@ const Profile = () => {
   const handleNavigate = (screen: string) => {
     if (screen === "address") {
       // Show edit address modal
+      setEditMode('address');
       setEditModalVisible(true);
       return;
     }
@@ -66,17 +62,28 @@ const Profile = () => {
   };
 
   const handleEditProfile = () => {
+    setEditMode('name');
     setEditModalVisible(true);
   };
 
-  const handleSaveProfile = (newName: string, newAddress?: string) => {
-    if (newName) {
-      setUserName(newName);
+  const handleSaveProfile = async (newName: string, newAddress?: string) => {
+    try {
+      const updates: { name?: string; address?: string } = {};
+      if (newName && newName !== user?.name) {
+        updates.name = newName;
+      }
+      if (newAddress !== undefined && newAddress !== user?.address) {
+        updates.address = newAddress;
+      }
+      
+      if (Object.keys(updates).length > 0) {
+        await updateProfile(updates);
+        showToast("Profile updated successfully!");
+      }
+    } catch (error) {
+      showToast("Failed to update profile. Please try again.");
+      console.error("Profile update error:", error);
     }
-    if (newAddress) {
-      setUserAddress(newAddress);
-    }
-    showToast("Profile updated successfully!");
   };
 
   const menuItems = [
@@ -97,7 +104,8 @@ const Profile = () => {
     {
       icon: "location-outline" as const,
       title: "Shipping Address",
-      subtitle: userAddress,
+      subtitle: user?.address || "No address set. Tap to add.",
+      screen: "address",
     },
   ];
 
@@ -109,8 +117,9 @@ const Profile = () => {
           visible={editModalVisible}
           onClose={() => setEditModalVisible(false)}
           onSuccess={handleSaveProfile}
-          currentName={userName}
-          currentAddress={userAddress}
+          currentName={user?.name || "Guest User"}
+          currentAddress={user?.address || ""}
+          initialTab={editMode}
         />
 
         {/* Profile Header */}
@@ -123,7 +132,7 @@ const Profile = () => {
               style={styles.profileImage}
             />
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>{userName}</Text>
+              <Text style={styles.userName}>{user?.name || "Guest User"}</Text>
               <Text style={styles.userEmail}>{user?.email}</Text>
             </View>
           </View>
@@ -164,7 +173,7 @@ const Profile = () => {
             <TouchableOpacity
               key={index}
               style={styles.menuItem}
-              onPress={() => (item.screen ? handleNavigate(item.screen) : null)}
+              onPress={() => handleNavigate(item.screen || "")}
             >
               <View style={styles.menuItemLeft}>
                 <View style={styles.menuIconContainer}>

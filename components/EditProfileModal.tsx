@@ -1,21 +1,21 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Keyboard,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    ToastAndroid,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  ToastAndroid,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 
 interface EditProfileModalProps {
@@ -24,6 +24,7 @@ interface EditProfileModalProps {
   onSuccess?: (newName: string, newAddress?: string) => void;
   currentName: string;
   currentAddress?: string;
+  initialTab?: 'name' | 'address';
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({
@@ -31,14 +32,25 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onClose,
   onSuccess,
   currentName,
-  currentAddress = "123 Main St, New York, NY 10001",
+  currentAddress = "",
+  initialTab = 'name',
 }) => {
   const [name, setName] = useState(currentName);
-  const [address, setAddress] = useState(currentAddress);
+  const [address, setAddress] = useState(currentAddress || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'name' | 'address'>('name');
+  const [activeTab, setActiveTab] = useState<'name' | 'address'>(initialTab);
   const { user } = useAuth();
+
+  // Update state when modal opens or props change
+  useEffect(() => {
+    if (visible) {
+      setName(currentName);
+      setAddress(currentAddress || "");
+      setActiveTab(initialTab);
+      setError(null);
+    }
+  }, [visible, currentName, currentAddress, initialTab]);
 
   const handleSave = async () => {
     if (activeTab === 'name' && !name.trim()) {
@@ -52,7 +64,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     }
 
     if ((activeTab === 'name' && name.trim() === currentName) || 
-        (activeTab === 'address' && address.trim() === currentAddress)) {
+        (activeTab === 'address' && address.trim() === (currentAddress || ""))) {
       onClose();
       return;
     }
