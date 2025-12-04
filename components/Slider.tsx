@@ -124,7 +124,7 @@ const handleAddToCart = (product: Product) => {
         }}
         scrollEventThrottle={16}
        renderItem={({ item: product, index }) => {
-  const isInCart = items.some((cartItem) => cartItem.id === product.id);
+  const isInCart = user ? items.some((cartItem) => cartItem.id === product.id) : false;
 
   return (
     <View style={[styles.card, index === activeIndex && styles.activeCard]}>
