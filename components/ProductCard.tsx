@@ -26,8 +26,8 @@ const ProductCard = ({ item, onPress, onAddToCart }: Props) => {
   const { addToCart, items } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites(); 
 
-  const isInCart = items.some((ci) => ci.id === item.id);
-  const favStatus = isFavorite(item.id);
+  const isInCart = user ? items.some((ci) => ci.id === item.id) : false;
+  const favStatus = user ? isFavorite(item.id) : false;
 
   const rating = item.rating ?? { rate: 0, count: 0 };
 

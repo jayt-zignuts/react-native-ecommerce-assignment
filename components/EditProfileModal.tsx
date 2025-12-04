@@ -125,8 +125,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const renderAddressTab = () => (
     <>
       <View style={styles.inputContainer}>
-        <View style={styles.inputWrapper}>
-          <Ionicons name="home-outline" size={20} color="#666" style={styles.inputIcon} />
+        <View style={[styles.inputWrapper, styles.addressInputWrapper]}>
+          <Ionicons name="home-outline" size={20} color="#666" style={styles.addressInputIcon} />
           <TextInput
             style={[styles.input, styles.multilineInput]}
             placeholder="Enter your shipping address"
@@ -137,7 +137,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             autoCorrect={false}
             editable={!loading}
             multiline
-            numberOfLines={3}
+            numberOfLines={4}
             textAlignVertical="top"
           />
         </View>
@@ -418,14 +418,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FAFAFA',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#F0F0F0',
     paddingHorizontal: 16,
+    minHeight: 56,
   },
   inputIcon: {
-    marginTop: 16,
     marginRight: 12,
   },
   input: {
@@ -433,11 +435,19 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     fontSize: 16,
     color: '#000000',
+    backgroundColor: 'transparent',
   },
   multilineInput: {
     minHeight: 100,
     paddingTop: 16,
     paddingBottom: 16,
+  },
+  addressInputWrapper: {
+    alignItems: 'flex-start',
+    paddingTop: 16,
+  },
+  addressInputIcon: {
+    marginTop: 4,
   },
   errorContainer: {
     flexDirection: 'row',
