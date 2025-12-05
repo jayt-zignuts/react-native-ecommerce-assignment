@@ -1,4 +1,5 @@
 import { fetchProductById, Product } from "@/api/products";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -20,8 +21,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ProductDetails = () => {
-
-const navigation = useNavigation();
+  const navigation = useNavigation();
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -54,15 +54,13 @@ const navigation = useNavigation();
     }
   };
 
-
-const showToast = (message: string) => {
-  if (Platform.OS === "android") {
-    ToastAndroid.show(message, ToastAndroid.SHORT);
-  } else {
-    Alert.alert(message);
-  }
-};
-
+  const showToast = (message: string) => {
+    if (Platform.OS === "android") {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      Alert.alert(message);
+    }
+  };
 
   const handleAddToCart = () => {
     if (!user) {
@@ -121,14 +119,14 @@ const showToast = (message: string) => {
       ]);
       return;
     }
-    
+
     if (product) {
       await toggleFavorite(product.id);
       // const isFav = isFavorite(product.id);
       ToastAndroid.show(
-            favStatus ? "Removed from favourites" : "Added to favourites",
-            ToastAndroid.SHORT
-          );
+        favStatus ? "Removed from favourites" : "Added to favourites",
+        ToastAndroid.SHORT
+      );
     }
   };
 
@@ -184,154 +182,163 @@ const showToast = (message: string) => {
   const favStatus = isFavorite(product.id);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Header with Back Button */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#000000" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Product Details</Text>
-          <TouchableOpacity
-            style={styles.wishlistBtn}
-            onPress={handleFavorite}
-          >
-            <Ionicons
-              name={favStatus ? "heart" : "heart-outline"}
-              size={24}
-              color={favStatus ? "#FF3B30" : "#000000"}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Product Image */}
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: product.image }}
-            style={styles.mainImage}
-            resizeMode="contain"
-          />
-          {product.rating?.rate && product.rating.rate > 4.5 && (
-            <View style={styles.ratingBadge}>
-              <Ionicons name="trophy" size={14} color="#FFFFFF" />
-              <Text style={styles.ratingBadgeText}>TOP RATED</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Product Info */}
-        <View style={styles.content}>
-          {/* Category & Rating */}
-          <View style={styles.infoRow}>
-            <View style={styles.categoryContainer}>
-              <Ionicons name="pricetag-outline" size={16} color="#666" />
-              <Text style={styles.categoryText}>
-                {product.category.toUpperCase()}
-              </Text>
-            </View>
-            <View style={styles.ratingContainer}>
-              {renderStars(product.rating?.rate || 0)}
-              <Text style={styles.ratingText}>
-                {product.rating?.rate?.toFixed(1)} ({product.rating?.count}{" "}
-                reviews)
-              </Text>
-            </View>
+    <ProtectedRoute>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.headerContainer}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000000" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Product Details</Text>
           </View>
+        </View>
+        <ScrollView
+          style={styles.container}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Product Image */}
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: product.image }}
+              style={styles.mainImage}
+              resizeMode="contain"
+            />
 
-          {/* Product Title */}
-          <Text style={styles.title}>{product.title}</Text>
-
-          {/* Price Section */}
-          <View style={styles.priceSection}>
-            <Text style={styles.price}>₹{product.price.toFixed(2)}</Text>
-            {product.price > 50 && (
-              <View style={styles.freeShippingBadge}>
-                <Ionicons name="rocket-outline" size={14} color="#FFFFFF" />
-                <Text style={styles.freeShippingText}>FREE SHIPPING</Text>
+            {/* Top Rated Badge */}
+            {product.rating?.rate && product.rating.rate > 4.5 && (
+              <View style={styles.ratingBadge}>
+                <Ionicons name="trophy" size={14} color="#FFFFFF" />
+                <Text style={styles.ratingBadgeText}>TOP RATED</Text>
               </View>
             )}
-          </View>
 
-          {/* Description */}
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.description}>{product.description}</Text>
-          </View>
-
-          {/* Features */}
-          <View style={styles.featuresContainer}>
-            <Text style={styles.sectionTitle}>Features</Text>
-            <View style={styles.featureItem}>
-              <Ionicons name="checkmark-circle" size={18} color="#4CD964" />
-              <Text style={styles.featureText}>
-                30-Day Money Back Guarantee
-              </Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="checkmark-circle" size={18} color="#4CD964" />
-              <Text style={styles.featureText}>Free Shipping Worldwide</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="checkmark-circle" size={18} color="#4CD964" />
-              <Text style={styles.featureText}>24/7 Customer Support</Text>
-            </View>
-          </View>
-
-          {/* Action Buttons */}
-          <View style={styles.actionButtons}>
+            {/* Favorite Heart Icon */}
             <TouchableOpacity
-              style={[styles.cartBtn, isInCart && styles.inCartBtn]}
-              onPress={handleAddToCart}
-              disabled={isInCart}
+              style={styles.wishlistBtn}
+              onPress={handleFavorite}
             >
               <Ionicons
-                name={isInCart ? "checkmark-circle" : "cart-outline"}
-                size={22}
-                color={isInCart ? "#FFFFFF" : "#000000"}
+                name={favStatus ? "heart" : "heart-outline"}
+                size={28}
+                color={favStatus ? "#FF3B30" : "#FFFFFF"}
               />
-              <Text
-                style={[styles.cartBtnText, isInCart && styles.inCartBtnText]}
+            </TouchableOpacity>
+          </View>
+
+          {/* Product Info */}
+          <View style={styles.content}>
+            {/* Category & Rating */}
+            <View style={styles.infoRow}>
+              <View style={styles.categoryContainer}>
+                <Ionicons name="pricetag-outline" size={16} color="#666" />
+                <Text style={styles.categoryText}>
+                  {product.category.toUpperCase()}
+                </Text>
+              </View>
+              <View style={styles.ratingContainer}>
+                {renderStars(product.rating?.rate || 0)}
+                <Text style={styles.ratingText}>
+                  {product.rating?.rate?.toFixed(1)} ({product.rating?.count}{" "}
+                  reviews)
+                </Text>
+              </View>
+            </View>
+
+            {/* Product Title */}
+            <Text style={styles.title}>{product.title}</Text>
+
+            {/* Price Section */}
+            <View style={styles.priceSection}>
+              <Text style={styles.price}>₹{product.price.toFixed(2)}</Text>
+              {product.price > 50 && (
+                <View style={styles.freeShippingBadge}>
+                  <Ionicons name="rocket-outline" size={14} color="#FFFFFF" />
+                  <Text style={styles.freeShippingText}>FREE SHIPPING</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Description */}
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.sectionTitle}>Description</Text>
+              <Text style={styles.description}>{product.description}</Text>
+            </View>
+
+            {/* Features */}
+            <View style={styles.featuresContainer}>
+              <Text style={styles.sectionTitle}>Features</Text>
+              <View style={styles.featureItem}>
+                <Ionicons name="checkmark-circle" size={18} color="#4CD964" />
+                <Text style={styles.featureText}>
+                  30-Day Money Back Guarantee
+                </Text>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="checkmark-circle" size={18} color="#4CD964" />
+                <Text style={styles.featureText}>Free Shipping Worldwide</Text>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="checkmark-circle" size={18} color="#4CD964" />
+                <Text style={styles.featureText}>24/7 Customer Support</Text>
+              </View>
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={[styles.cartBtn, isInCart && styles.inCartBtn]}
+                onPress={handleAddToCart}
+                disabled={isInCart}
               >
-                {isInCart ? "ADDED TO CART" : "ADD TO CART"}
-              </Text>
-            </TouchableOpacity>
+                <Ionicons
+                  name={isInCart ? "checkmark-circle" : "cart-outline"}
+                  size={22}
+                  color={isInCart ? "#FFFFFF" : "#000000"}
+                />
+                <Text
+                  style={[styles.cartBtnText, isInCart && styles.inCartBtnText]}
+                >
+                  {isInCart ? "ADDED TO CART" : "ADD TO CART"}
+                </Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity style={styles.buyBtn} onPress={handleBuyNow}>
-              <Ionicons name="flash" size={22} color="#FFFFFF" />
-              <Text style={styles.buyBtnText}>BUY NOW</Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity style={styles.buyBtn} onPress={handleBuyNow}>
+                <Ionicons name="flash" size={22} color="#FFFFFF" />
+                <Text style={styles.buyBtnText}>BUY NOW</Text>
+              </TouchableOpacity>
+            </View>
 
-          {/* Additional Info */}
-          <View style={styles.infoContainer}>
-            <View style={styles.infoItem}>
-              <Ionicons name="shield-checkmark" size={20} color="#000" />
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.infoTitle}>Secure Payment</Text>
-                <Text style={styles.infoSubtitle}>100% Secure & Safe</Text>
+            {/* Additional Info */}
+            <View style={styles.infoContainer}>
+              <View style={styles.infoItem}>
+                <Ionicons name="shield-checkmark" size={20} color="#000" />
+                <View style={styles.infoTextContainer}>
+                  <Text style={styles.infoTitle}>Secure Payment</Text>
+                  <Text style={styles.infoSubtitle}>100% Secure & Safe</Text>
+                </View>
               </View>
-            </View>
-            <View style={styles.infoItem}>
-              <Ionicons name="refresh" size={20} color="#000" />
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.infoTitle}>Easy Returns</Text>
-                <Text style={styles.infoSubtitle}>30-Day Return Policy</Text>
+              <View style={styles.infoItem}>
+                <Ionicons name="refresh" size={20} color="#000" />
+                <View style={styles.infoTextContainer}>
+                  <Text style={styles.infoTitle}>Easy Returns</Text>
+                  <Text style={styles.infoSubtitle}>30-Day Return Policy</Text>
+                </View>
               </View>
-            </View>
-            <View style={styles.infoItem}>
-              <Ionicons name="cube" size={20} color="#000" />
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.infoTitle}>Fast Delivery</Text>
-                <Text style={styles.infoSubtitle}>2-3 Business Days</Text>
+              <View style={styles.infoItem}>
+                <Ionicons name="cube" size={20} color="#000" />
+                <View style={styles.infoTextContainer}>
+                  <Text style={styles.infoTitle}>Fast Delivery</Text>
+                  <Text style={styles.infoSubtitle}>2-3 Business Days</Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </ProtectedRoute>
   );
 };
 
@@ -341,6 +348,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
+  headerContainer: {
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+
   loaderContainer: {
     flex: 1,
     justifyContent: "center",
@@ -387,7 +400,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
@@ -402,7 +415,11 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   wishlistBtn: {
+    position: "absolute",
+    top: 16,
+    right: 16,
     padding: 8,
+    borderRadius: 20,
   },
   imageContainer: {
     height: 320,

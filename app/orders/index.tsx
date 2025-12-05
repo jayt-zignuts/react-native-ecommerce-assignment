@@ -2,8 +2,8 @@ import Header from "@/components/Header";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useOrders } from "@/hooks/useOrders";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React from "react";
+import { useNavigation, useRouter } from "expo-router";
+import React, { useLayoutEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,8 +14,16 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Orders = () => {
+
+const navigation = useNavigation();
+    
+      useLayoutEffect(() => {
+        navigation.setOptions({ headerShown: false });
+      }, [navigation]);
+
   const router = useRouter();
   const { orders, loading, clearOrders } = useOrders();
 
@@ -68,6 +76,8 @@ const Orders = () => {
     <TouchableOpacity 
       style={styles.orderCard} 
       activeOpacity={0.9}
+          onPress={() => router.push(`/orders/${item.id}`)}
+
     >
       <View style={styles.orderHeader}>
         <View style={styles.orderHeaderLeft}>
@@ -155,23 +165,23 @@ const Orders = () => {
     </View>
   );
 
-  if (loading) {
+if (loading) {
     return (
       <ProtectedRoute>
-        <View style={styles.fullContainer}>
+        <SafeAreaView style={styles.fullContainer}>
           <Header />
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color="#000000" />
             <Text style={styles.loadingText}>Loading orders...</Text>
           </View>
-        </View>
+        </SafeAreaView>
       </ProtectedRoute>
     );
   }
 
-  return (
+ return (
     <ProtectedRoute>
-      <View style={styles.fullContainer}>
+      <SafeAreaView style={styles.fullContainer}>
         <Header />
 
         <View style={styles.headerContainer}>
@@ -205,7 +215,7 @@ const Orders = () => {
             showsVerticalScrollIndicator={false}
           />
         )}
-      </View>
+      </SafeAreaView>
     </ProtectedRoute>
   );
 };
