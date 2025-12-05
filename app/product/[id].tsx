@@ -1,16 +1,17 @@
 import { fetchProductById, Product } from "@/api/products";
+import ProductDetailsSkeleton from "@/components/ProductDetailsSkeleton";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Image,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -35,24 +36,36 @@ const ProductDetails = () => {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadProduct();
-  }, [id]);
-
-  const loadProduct = async () => {
+  const loadProduct = useCallback(async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       const data = await fetchProductById(Number(id));
       setProduct(data);
     } catch (error) {
       console.error("Error loading product:", error);
       Alert.alert("Error", "Failed to load product details");
-      router.back();
+      if (!isRefresh) {
+        router.back();
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, [id, router]);
+
+  const onRefresh = useCallback(() => {
+    loadProduct(true);
+  }, [loadProduct]);
+
+  useEffect(() => {
+    loadProduct();
+  }, [loadProduct]);
 
   const showToast = (message: string) => {
     if (Platform.OS === "android") {
@@ -151,16 +164,17 @@ const ProductDetails = () => {
     return stars;
   };
 
-  if (loading) {
+  if (loading && !refreshing) {
     return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#000000" />
-        <Text style={styles.loadingText}>Loading Product Details...</Text>
-      </View>
+      <ProtectedRoute>
+        <SafeAreaView style={styles.safeArea}>
+          <ProductDetailsSkeleton />
+        </SafeAreaView>
+      </ProtectedRoute>
     );
   }
 
-  if (!product) {
+  if (!product && !refreshing) {
     return (
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle-outline" size={64} color="#FF3B30" />
@@ -178,8 +192,8 @@ const ProductDetails = () => {
     );
   }
 
-  const isInCart = items.some((item) => item.id === product.id);
-  const favStatus = isFavorite(product.id);
+  const isInCart = product ? items.some((item) => item.id === product.id) : false;
+  const favStatus = product ? isFavorite(product.id) : false;
 
   return (
     <ProtectedRoute>
@@ -195,20 +209,31 @@ const ProductDetails = () => {
             <Text style={styles.headerTitle}>Product Details</Text>
           </View>
         </View>
-        <ScrollView
-          style={styles.container}
-          showsVerticalScrollIndicator={false}
-        >
+        {refreshing ? (
+          <ProductDetailsSkeleton />
+        ) : product ? (
+          <ScrollView
+            style={styles.container}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl 
+                refreshing={false} 
+                onRefresh={onRefresh}
+                tintColor="transparent"
+                colors={["transparent"]}
+              />
+            }
+          >
           {/* Product Image */}
           <View style={styles.imageContainer}>
             <Image
-              source={{ uri: product.image }}
+              source={{ uri: product!.image }}
               style={styles.mainImage}
               resizeMode="contain"
             />
 
             {/* Top Rated Badge */}
-            {product.rating?.rate && product.rating.rate > 4.5 && (
+            {product!.rating?.rate && product!.rating.rate > 4.5 && (
               <View style={styles.ratingBadge}>
                 <Ionicons name="trophy" size={14} color="#FFFFFF" />
                 <Text style={styles.ratingBadgeText}>TOP RATED</Text>
@@ -235,25 +260,25 @@ const ProductDetails = () => {
               <View style={styles.categoryContainer}>
                 <Ionicons name="pricetag-outline" size={16} color="#666" />
                 <Text style={styles.categoryText}>
-                  {product.category.toUpperCase()}
+                  {product!.category.toUpperCase()}
                 </Text>
               </View>
               <View style={styles.ratingContainer}>
-                {renderStars(product.rating?.rate || 0)}
+                {renderStars(product!.rating?.rate || 0)}
                 <Text style={styles.ratingText}>
-                  {product.rating?.rate?.toFixed(1)} ({product.rating?.count}{" "}
+                  {product!.rating?.rate?.toFixed(1)} ({product!.rating?.count}{" "}
                   reviews)
                 </Text>
               </View>
             </View>
 
             {/* Product Title */}
-            <Text style={styles.title}>{product.title}</Text>
+            <Text style={styles.title}>{product!.title}</Text>
 
             {/* Price Section */}
             <View style={styles.priceSection}>
-              <Text style={styles.price}>₹{product.price.toFixed(2)}</Text>
-              {product.price > 50 && (
+              <Text style={styles.price}>${product!.price.toFixed(2)}</Text>
+              {product!.price > 50 && (
                 <View style={styles.freeShippingBadge}>
                   <Ionicons name="rocket-outline" size={14} color="#FFFFFF" />
                   <Text style={styles.freeShippingText}>FREE SHIPPING</Text>
@@ -264,7 +289,7 @@ const ProductDetails = () => {
             {/* Description */}
             <View style={styles.descriptionContainer}>
               <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.description}>{product.description}</Text>
+              <Text style={styles.description}>{product!.description}</Text>
             </View>
 
             {/* Features */}
@@ -336,7 +361,8 @@ const ProductDetails = () => {
               </View>
             </View>
           </View>
-        </ScrollView>
+          </ScrollView>
+        ) : null}
       </SafeAreaView>
     </ProtectedRoute>
   );

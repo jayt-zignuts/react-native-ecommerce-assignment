@@ -5,12 +5,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import {
-    Image,
-    StyleSheet,
-    Text,
-    ToastAndroid,
-    TouchableOpacity,
-    View,
+  Image,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Product } from "../api/products";
 
@@ -122,7 +122,6 @@ const ProductCard = ({ item, onPress, onAddToCart }: Props) => {
             {item.title}
           </Text>
 
-          {/* ✅ Favourite Button */}
           <TouchableOpacity
             style={styles.wishlistButton}
             onPress={handleToggleFavorite}
@@ -146,7 +145,7 @@ const ProductCard = ({ item, onPress, onAddToCart }: Props) => {
 
         <View style={styles.footer}>
           <View>
-            <Text style={styles.price}>₹{item.price.toFixed(2)}</Text>
+            <Text style={styles.price}>${item.price.toFixed(2)}</Text>
             {showFreeShipping && (
               <Text style={styles.shippingText}>Free Shipping</Text>
             )}

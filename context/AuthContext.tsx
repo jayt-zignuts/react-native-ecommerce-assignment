@@ -5,8 +5,6 @@ export type User = {
   email: string;
   name: string;
   token: string;
-  profileImage?: string;
-  address?: string;
 };
 
 type AuthContextType = {
@@ -14,7 +12,6 @@ type AuthContextType = {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (updates: { name?: string; address?: string }) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -22,12 +19,10 @@ export const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: async () => {},
   logout: async () => {},
-  updateProfile: async () => {},
 });
 
 const AUTH_KEY = 'AUTH_TOKEN';
 
-// Mock users
 const mockUsers = [
   { email: 'test@zignuts.com', password: '123456', name: 'Test User' },
   { email: 'practical@zignuts.com', password: '123456', name: 'Practical User' },
@@ -58,8 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const payload: User = {
       ...found,
       token,
-      profileImage: `https://i.pravatar.cc/150`,
-      address: found.address || '',
     };
 
     try {
@@ -80,26 +73,8 @@ const logout = async () => {
   }
 };
 
-  const updateProfile = async (updates: { name?: string; address?: string }) => {
-    if (!user) return;
-    
-    const updatedUser: User = {
-      ...user,
-      ...(updates.name && { name: updates.name }),
-      ...(updates.address !== undefined && { address: updates.address }),
-    };
-
-    try {
-      await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(updatedUser));
-      setUser(updatedUser);
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      throw new Error('Failed to update profile, please try again');
-    }
-  };
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, logout}}>
       {children}
     </AuthContext.Provider>
   );

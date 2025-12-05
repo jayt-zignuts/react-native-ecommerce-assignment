@@ -12,22 +12,36 @@ export type Product = {
 };
 
 const API_URL = 'https://fakestoreapi.com/products';
+export interface ProductsResponse {
+  products: Product[];
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  hasMore: boolean;
+}
 
-export const fetchProducts = async (page = 1, limit = 5): Promise<Product[]> => {
+export const fetchProducts = async (page = 1, limit = 5): Promise<ProductsResponse> => {
   try {
-    const res = await fetch(`${API_URL}?limit=${limit}&sort=desc`);
+    const res = await fetch(`${API_URL}?sort=desc`);
     if (!res.ok) throw new Error('Failed to fetch products');
-    const data: Product[] = await res.json();
+    const allProducts: Product[] = await res.json();
 
-    const start = (page - 1) * limit;
-    const end = page * limit;
-    return data.slice(start, end);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedProducts = allProducts.slice(startIndex, endIndex);
+    
+    return {
+      products: paginatedProducts,
+      currentPage: page,
+      totalPages: Math.ceil(allProducts.length / limit),
+      totalItems: allProducts.length,
+      hasMore: endIndex < allProducts.length
+    };
   } catch (error) {
     console.error('fetchProducts error:', error);
     throw error;
   }
 };
-
 
 export const fetchProductById = async (id: number): Promise<Product> => {
   try {

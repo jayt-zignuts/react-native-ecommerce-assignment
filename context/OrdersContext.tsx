@@ -23,6 +23,7 @@ export type OrdersContextType = {
   addOrder: (order: Omit<Order, 'id' | 'date' | 'status'>) => Promise<Order>;
   clearOrders: () => Promise<void>;
   getOrderById: (id: string) => Order | undefined;
+  refreshOrders: () => Promise<void>;
   loading: boolean;
 };
 
@@ -39,7 +40,7 @@ export const OrdersProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
       loadOrders();
     } else {
-      setOrders([]); // clear orders on logout
+      setOrders([]); 
       setLoading(false);
     }
   }, [user]);
@@ -89,8 +90,14 @@ export const OrdersProvider = ({ children }: { children: ReactNode }) => {
 
   const getOrderById = (id: string) => orders.find(order => order.id === id);
 
+  const refreshOrders = async () => {
+    if (user) {
+      await loadOrders();
+    }
+  };
+
   return (
-    <OrdersContext.Provider value={{ orders, addOrder, clearOrders, getOrderById, loading }}>
+    <OrdersContext.Provider value={{ orders, addOrder, clearOrders, getOrderById, refreshOrders, loading }}>
       {children}
     </OrdersContext.Provider>
   );
