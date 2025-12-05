@@ -13,17 +13,21 @@ export type Product = {
 
 const API_URL = 'https://fakestoreapi.com/products';
 
-export const fetchProducts = async (): Promise<Product[]> => {
+export const fetchProducts = async (page = 1, limit = 5): Promise<Product[]> => {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(`${API_URL}?limit=${limit}&sort=desc`);
     if (!res.ok) throw new Error('Failed to fetch products');
     const data: Product[] = await res.json();
-    return data;
+
+    const start = (page - 1) * limit;
+    const end = page * limit;
+    return data.slice(start, end);
   } catch (error) {
     console.error('fetchProducts error:', error);
     throw error;
   }
 };
+
 
 export const fetchProductById = async (id: number): Promise<Product> => {
   try {

@@ -1,6 +1,6 @@
-import { useAuth } from '@/hooks/useAuth';
-import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import { useAuth } from "@/hooks/useAuth";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +16,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-} from 'react-native';
+} from "react-native";
 
 interface EditProfileModalProps {
   visible: boolean;
@@ -24,7 +24,7 @@ interface EditProfileModalProps {
   onSuccess?: (newName: string, newAddress?: string) => void;
   currentName: string;
   currentAddress?: string;
-  initialTab?: 'name' | 'address';
+  initialTab?: "name" | "address";
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({
@@ -33,13 +33,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onSuccess,
   currentName,
   currentAddress = "",
-  initialTab = 'name',
+  initialTab = "name",
 }) => {
   const [name, setName] = useState(currentName);
   const [address, setAddress] = useState(currentAddress || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'name' | 'address'>(initialTab);
+  const [activeTab, setActiveTab] = useState<"name" | "address">(initialTab);
   const { user } = useAuth();
 
   // Update state when modal opens or props change
@@ -53,18 +53,20 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   }, [visible, currentName, currentAddress, initialTab]);
 
   const handleSave = async () => {
-    if (activeTab === 'name' && !name.trim()) {
-      setError('Name cannot be empty');
+    if (activeTab === "name" && !name.trim()) {
+      setError("Name cannot be empty");
       return;
     }
 
-    if (activeTab === 'address' && !address.trim()) {
-      setError('Address cannot be empty');
+    if (activeTab === "address" && !address.trim()) {
+      setError("Address cannot be empty");
       return;
     }
 
-    if ((activeTab === 'name' && name.trim() === currentName) || 
-        (activeTab === 'address' && address.trim() === (currentAddress || ""))) {
+    if (
+      (activeTab === "name" && name.trim() === currentName) ||
+      (activeTab === "address" && address.trim() === (currentAddress || ""))
+    ) {
       onClose();
       return;
     }
@@ -77,12 +79,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       setLoading(false);
       onSuccess?.(name.trim(), address.trim());
       onClose();
-      
+
       // Show toast message
-      if (Platform.OS === 'android') {
-        ToastAndroid.show('Profile updated successfully!', ToastAndroid.SHORT);
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Profile updated successfully!", ToastAndroid.SHORT);
       } else {
-        Alert.alert('Success', 'Profile updated successfully!');
+        Alert.alert("Success", "Profile updated successfully!");
       }
     }, 1000);
   };
@@ -98,7 +100,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     <>
       <View style={styles.inputContainer}>
         <View style={styles.inputWrapper}>
-          <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+          <Ionicons
+            name="person-outline"
+            size={20}
+            color="#666"
+            style={styles.inputIcon}
+          />
           <TextInput
             style={styles.input}
             placeholder="Enter your full name"
@@ -115,9 +122,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
       {/* Character Count */}
       <View style={styles.charCountContainer}>
-        <Text style={styles.charCountText}>
-          {name.length}/50 characters
-        </Text>
+        <Text style={styles.charCountText}>{name.length}/50 characters</Text>
       </View>
     </>
   );
@@ -126,7 +131,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     <>
       <View style={styles.inputContainer}>
         <View style={[styles.inputWrapper, styles.addressInputWrapper]}>
-          <Ionicons name="home-outline" size={20} color="#666" style={styles.addressInputIcon} />
+          <Ionicons
+            name="home-outline"
+            size={20}
+            color="#666"
+            style={styles.addressInputIcon}
+          />
           <TextInput
             style={[styles.input, styles.multilineInput]}
             placeholder="Enter your shipping address"
@@ -152,7 +162,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         </View>
         <View style={styles.tipItem}>
           <Ionicons name="checkmark-circle" size={14} color="#4CD964" />
-          <Text style={styles.tipText}>Include apartment/suite number if applicable</Text>
+          <Text style={styles.tipText}>
+            Include apartment/suite number if applicable
+          </Text>
         </View>
       </View>
     </>
@@ -166,7 +178,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       statusBarTranslucent
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoid}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -176,7 +188,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 {/* Modal Header */}
                 <View style={styles.modalHeader}>
                   <View style={styles.modalIcon}>
-                    <Ionicons name="person-circle-outline" size={28} color="#FFFFFF" />
+                    <Ionicons
+                      name="person-circle-outline"
+                      size={28}
+                      color="#FFFFFF"
+                    />
                   </View>
                   <Text style={styles.modalTitle}>Edit Profile</Text>
                   <Text style={styles.modalSubtitle}>
@@ -192,7 +208,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   <View style={styles.userTextInfo}>
                     <Text style={styles.userEmail}>{user?.email}</Text>
                     <Text style={styles.userCurrentName}>
-                      {activeTab === 'name' ? `Current: ${currentName}` : `Current Address`}
+                      {activeTab === "name"
+                        ? `Current: ${currentName}`
+                        : `Current Address`}
                     </Text>
                   </View>
                 </View>
@@ -200,39 +218,60 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 {/* Tab Navigation */}
                 <View style={styles.tabContainer}>
                   <TouchableOpacity
-                    style={[styles.tabButton, activeTab === 'name' && styles.activeTab]}
-                    onPress={() => setActiveTab('name')}
+                    style={[
+                      styles.tabButton,
+                      activeTab === "name" && styles.activeTab,
+                    ]}
+                    onPress={() => setActiveTab("name")}
                     disabled={loading}
                   >
-                    <Ionicons 
-                      name="person-outline" 
-                      size={18} 
-                      color={activeTab === 'name' ? '#000000' : '#666'} 
+                    <Ionicons
+                      name="person-outline"
+                      size={18}
+                      color={activeTab === "name" ? "#000000" : "#666"}
                     />
-                    <Text style={[styles.tabText, activeTab === 'name' && styles.activeTabText]}>
+                    <Text
+                      style={[
+                        styles.tabText,
+                        activeTab === "name" && styles.activeTabText,
+                      ]}
+                    >
                       Edit Name
                     </Text>
                   </TouchableOpacity>
-                  
+
                   <TouchableOpacity
-                    style={[styles.tabButton, activeTab === 'address' && styles.activeTab]}
-                    onPress={() => setActiveTab('address')}
+                    style={[
+                      styles.tabButton,
+                      activeTab === "address" && styles.activeTab,
+                    ]}
+                    onPress={() => setActiveTab("address")}
                     disabled={loading}
                   >
-                    <Ionicons 
-                      name="location-outline" 
-                      size={18} 
-                      color={activeTab === 'address' ? '#000000' : '#666'} 
+                    <Ionicons
+                      name="location-outline"
+                      size={18}
+                      color={activeTab === "address" ? "#000000" : "#666"}
                     />
-                    <Text style={[styles.tabText, activeTab === 'address' && styles.activeTabText]}>
+                    <Text
+                      style={[
+                        styles.tabText,
+                        activeTab === "address" && styles.activeTabText,
+                      ]}
+                    >
                       Edit Address
                     </Text>
                   </TouchableOpacity>
                 </View>
 
-                {/* Content Area */}
-                <ScrollView style={styles.contentArea} showsVerticalScrollIndicator={false}>
-                  {activeTab === 'name' ? renderNameTab() : renderAddressTab()}
+                {/* Content Area - FIXED: Removed flex: 1 and added proper constraints */}
+                <ScrollView
+                  style={styles.contentArea}
+                  contentContainerStyle={styles.contentAreaContent}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {activeTab === "name" ? renderNameTab() : renderAddressTab()}
 
                   {/* Error Message */}
                   {error && (
@@ -246,7 +285,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 {/* Action Buttons */}
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
-                    style={[styles.saveButton, loading && styles.saveButtonDisabled]}
+                    style={[
+                      styles.saveButton,
+                      loading && styles.saveButtonDisabled,
+                    ]}
                     onPress={handleSave}
                     disabled={loading}
                   >
@@ -254,9 +296,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                       <ActivityIndicator size="small" color="#FFFFFF" />
                     ) : (
                       <>
-                        <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={22}
+                          color="#FFFFFF"
+                        />
                         <Text style={styles.saveButtonText}>
-                          {activeTab === 'name' ? 'Save Name' : 'Save Address'}
+                          {activeTab === "name" ? "Save Name" : "Save Address"}
                         </Text>
                       </>
                     )}
@@ -273,9 +319,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
                 {/* Note */}
                 <View style={styles.noteContainer}>
-                  <Ionicons name="information-circle-outline" size={16} color="#666" />
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={16}
+                    color="#666"
+                  />
                   <Text style={styles.noteText}>
-                    This will only update the information locally for this session
+                    This will only update the information locally for this
+                    session
                   </Text>
                 </View>
               </View>
@@ -293,37 +344,37 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   container: {
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
-    backgroundColor: '#FFFFFF',
+    maxHeight: "90%", // Changed from 80% to 90%
+    backgroundColor: "#FFFFFF",
     borderRadius: 24,
     padding: 24,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 10,
-    maxHeight: '80%',
   },
   modalHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   modalIcon: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#000000",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -331,72 +382,72 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: '800',
-    color: '#000000',
+    fontWeight: "800",
+    color: "#000000",
     marginBottom: 8,
     letterSpacing: 0.5,
   },
   modalSubtitle: {
     fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   userInfoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FAFAFA",
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
   },
   avatarContainer: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#F0F0F0",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
     borderWidth: 2,
-    borderColor: '#000000',
+    borderColor: "#000000",
   },
   userTextInfo: {
     flex: 1,
   },
   userEmail: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
+    fontWeight: "600",
+    color: "#000000",
     marginBottom: 4,
   },
   userCurrentName: {
     fontSize: 14,
-    color: '#666',
-    fontStyle: 'italic',
+    color: "#666",
+    fontStyle: "italic",
   },
   tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#F8F8F8',
+    flexDirection: "row",
+    backgroundColor: "#F8F8F8",
     borderRadius: 12,
     padding: 4,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
   },
   tabButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 12,
     borderRadius: 8,
     gap: 8,
   },
   activeTab: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -404,26 +455,28 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    color: '#666',
-    fontWeight: '600',
+    color: "#666",
+    fontWeight: "600",
   },
   activeTabText: {
-    color: '#000000',
+    color: "#000000",
   },
   contentArea: {
-    flex: 1,
-    marginBottom: 20,
+    maxHeight: 200, // FIXED: Added maxHeight constraint
+  },
+  contentAreaContent: {
+    paddingBottom: 10, // FIXED: Added padding for better spacing
   },
   inputContainer: {
     marginBottom: 16,
   },
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FAFAFA",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
     paddingHorizontal: 16,
     minHeight: 56,
   },
@@ -434,8 +487,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     fontSize: 16,
-    color: '#000000',
-    backgroundColor: 'transparent',
+    color: "#000000",
+    backgroundColor: "transparent",
   },
   multilineInput: {
     minHeight: 100,
@@ -443,76 +496,78 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   addressInputWrapper: {
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     paddingTop: 16,
   },
   addressInputIcon: {
     marginTop: 4,
+    marginRight: 12,
   },
   errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF5F5',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF5F5",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#FFE5E5',
+    borderColor: "#FFE5E5",
     marginBottom: 12,
     gap: 10,
   },
   errorText: {
-    color: '#FF3B30',
+    color: "#FF3B30",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     flex: 1,
   },
   charCountContainer: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     marginBottom: 16,
   },
   charCountText: {
     fontSize: 12,
-    color: '#999',
-    fontWeight: '500',
+    color: "#999",
+    fontWeight: "500",
   },
   tipsContainer: {
-    backgroundColor: '#F8F8F8',
+    backgroundColor: "#F8F8F8",
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
   },
   tipsTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#000000',
+    fontWeight: "600",
+    color: "#000000",
     marginBottom: 8,
   },
   tipItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 6,
     gap: 8,
   },
   tipText: {
     fontSize: 13,
-    color: '#666',
+    color: "#666",
     flex: 1,
   },
   buttonContainer: {
+    marginTop: 20,
     marginBottom: 20,
   },
   saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#000000',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#000000",
     paddingVertical: 18,
     borderRadius: 12,
     gap: 12,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -522,39 +577,39 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.5,
   },
   cancelButton: {
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#F0F0F0',
-    backgroundColor: 'transparent',
+    borderColor: "#F0F0F0",
+    backgroundColor: "transparent",
   },
   cancelButtonText: {
-    color: '#666',
+    color: "#666",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   noteContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8F8F8',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F8F8",
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
     gap: 8,
   },
   noteText: {
     fontSize: 13,
-    color: '#666',
+    color: "#666",
     flex: 1,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
 });
 
