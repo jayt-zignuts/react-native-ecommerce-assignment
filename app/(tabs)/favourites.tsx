@@ -1,15 +1,16 @@
 import { fetchProducts, Product } from "@/api/products";
+import FavouriteCardSkeleton from "@/components/FavouriteCardSkeleton";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,
   Platform,
+  RefreshControl,
   StyleSheet,
   Text,
   ToastAndroid,
@@ -30,6 +31,7 @@ const Favourites = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -46,17 +48,26 @@ const Favourites = () => {
     }
   }, [favorites, products]);
 
-  const loadProducts = async () => {
+  const loadProducts = async (isRefresh = false) => {
     try {
-      setLoading(true);
-      const data = await fetchProducts();
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      const { products: data } = await fetchProducts(1, 50);
       setProducts(data);
     } catch (error) {
       console.error("Error loading products:", error);
       Alert.alert("Error", "Failed to load products");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    loadProducts(true);
   };
 
   const showToast = (message: string) => {
@@ -137,9 +148,19 @@ const Favourites = () => {
   );
 
   const LoadingState = () => (
-    <View style={styles.loaderContainer}>
-      <ActivityIndicator size="large" color="#000000" />
-      <Text style={styles.loadingText}>Loading your favourites...</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Favourites</Text>
+      </View>
+      <FlatList
+        data={Array(6).fill(null)}
+        renderItem={() => <FavouriteCardSkeleton />}
+        keyExtractor={(_, index) => `skeleton-${index}`}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        numColumns={2}
+        columnWrapperStyle={styles.columnWrapper}
+      />
     </View>
   );
 
@@ -195,7 +216,7 @@ const Favourites = () => {
         </View>
 
         <View style={styles.priceRow}>
-          <Text style={styles.itemPrice}>₹{item.price.toFixed(2)}</Text>
+          <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
           {item.price > 50 && (
             <View style={styles.shippingBadge}>
               <Ionicons name="rocket-outline" size={12} color="#FFFFFF" />
@@ -250,13 +271,29 @@ const Favourites = () => {
             <EmptyFavourites />
           ) : (
             <FlatList
-              data={filteredProducts}
-              renderItem={renderFavouriteItem}
-              keyExtractor={(item) => item.id.toString()}
-              contentContainerStyle={styles.listContainer}
+              data={refreshing ? Array(6).fill(null) : filteredProducts}
+              renderItem={({ item, index }) => 
+                refreshing ? (
+                  <FavouriteCardSkeleton />
+                ) : (
+                  renderFavouriteItem({ item: item as Product })
+                )
+              }
+              keyExtractor={(item, index) => 
+                refreshing ? `skeleton-${index}` : (item as Product).id.toString()
+              }
+              contentContainerStyle={[styles.listContainer, { flexGrow: 1 }]}
               showsVerticalScrollIndicator={false}
               numColumns={2}
               columnWrapperStyle={styles.columnWrapper}
+              refreshControl={
+                <RefreshControl 
+                  refreshing={false} 
+                  onRefresh={onRefresh}
+                  tintColor="transparent"
+                  colors={["transparent"]}
+                />
+              }
             />
           )}
 

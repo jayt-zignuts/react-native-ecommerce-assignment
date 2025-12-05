@@ -1,134 +1,183 @@
-import LoginModal from '@/components/LoginModal';
+import { useAuth } from '@/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
-  View
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
-  const [modalVisible, setModalVisible] = useState(true);
   const router = useRouter();
+  const { login } = useAuth();
 
-  const handleClose = () => {
-    setModalVisible(false);
-    router.push('/');
-  };
+  const [email, setEmail] = useState('test@zignuts.com');
+  const [password, setPassword] = useState('123456');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [secureText, setSecureText] = useState(true);
 
-  const handleLoginSuccess = () => {
-    console.log('Logged in successfully');
-    router.back();
+  const handleClose = () => router.push('/');
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      setError('Please fill in all fields');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      await login(email, password);
+      router.replace('/');
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Background Decorative Elements */}
-      <View style={styles.backgroundCircles}>
-        <View style={[styles.circle, styles.circle1]} />
-        <View style={[styles.circle, styles.circle2]} />
-        <View style={[styles.circle, styles.circle3]} />
-      </View>
-
-      {/* Header with Back Button */}
-      <TouchableOpacity 
-        style={styles.backButton}
-        onPress={handleClose}
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <Ionicons name="arrow-back" size={24} color="#000000" />
-      </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <SafeAreaView style={styles.safeArea}>
+            <ScrollView
+              contentContainerStyle={styles.scrollContainer}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={handleClose}
+                disabled={loading}
+              >
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
 
-      {/* Brand Logo */}
-      <View style={styles.brandContainer}>
-        <View style={styles.logoContainer}>
-          <Ionicons name="lock-closed" size={40} color="#000000" />
-        </View>
-        <Text style={styles.brandText}>SHOP</Text>
-        <Text style={styles.brandAccent}>BLACK.</Text>
-      </View>
+              {/* Brand */}
+              <View style={styles.brandContainer}>
+                <View style={styles.logoContainer}>
+                  <Ionicons name="lock-closed" size={40} color="#000" />
+                </View>
+                <View style={styles.brandTextContainer}>
+                  <Text style={styles.brandText}>STORE</Text>
+                  <Text style={styles.brandAccent}>X</Text>
+                </View>
+              </View>
 
-      {/* Welcome Message */}
-      <View style={styles.welcomeContainer}>
-        <Text style={styles.welcomeTitle}>Welcome Back</Text>
-        <Text style={styles.welcomeSubtitle}>
-          Sign in to access your account and continue shopping
-        </Text>
-      </View>
+              <View style={styles.welcomeContainer}>
+                <Text style={styles.welcomeTitle}>Welcome Back</Text>
+                <Text style={styles.welcomeSubtitle}>
+                  Log in to access your account and continue shopping
+                </Text>
+              </View>
 
-      {/* Login Illustration */}
-      <View style={styles.illustrationContainer}>
-        <Ionicons name="person-circle-outline" size={120} color="#F0F0F0" />
-      </View>
+              {/* Form */}
+              <View style={styles.formContainer}>
+                {/* Email */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Email Address</Text>
+                  <View style={styles.inputWrapper}>
+                    <Ionicons name="mail-outline" size={20} color="#666" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your email"
+                      placeholderTextColor="#999"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      editable={!loading}
+                    />
+                  </View>
+                </View>
 
-      {/* Test Credentials */}
-      <View style={styles.credentialsContainer}>
-        <Text style={styles.credentialsTitle}>Test Credentials</Text>
-        <View style={styles.credentialItem}>
-          <Ionicons name="mail-outline" size={16} color="#666" />
-          <Text style={styles.credentialText}>test@zignuts.com</Text>
-        </View>
-        <View style={styles.credentialItem}>
-          <Ionicons name="key-outline" size={16} color="#666" />
-          <Text style={styles.credentialText}>123456</Text>
-        </View>
-        <View style={styles.credentialItem}>
-          <Ionicons name="mail-outline" size={16} color="#666" />
-          <Text style={styles.credentialText}>practical@zignuts.com</Text>
-        </View>
-        <View style={styles.credentialItem}>
-          <Ionicons name="key-outline" size={16} color="#666" />
-          <Text style={styles.credentialText}>123456</Text>
-        </View>
-      </View>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Password</Text>
+                  <View style={styles.inputWrapper}>
+                    <Ionicons name="key-outline" size={20} color="#666" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your password"
+                      placeholderTextColor="#999"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={secureText}
+                      autoCapitalize="none"
+                      editable={!loading}
+                    />
+                    <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+                      <Ionicons
+                        name={secureText ? 'eye-outline' : 'eye-off-outline'}
+                        size={20}
+                        color="#666"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
 
-      {/* Login Modal */}
-      <LoginModal
-        visible={modalVisible}
-        onClose={handleClose}
-        onSuccess={handleLoginSuccess}
-      />
-    </SafeAreaView>
+                {/* Error */}
+                {error && (
+                  <View style={styles.errorContainer}>
+                    <Ionicons name="alert-circle" size={18} color="#FF3B30" />
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                )}
+
+                {/* Login Button */}
+                <TouchableOpacity
+                  style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+                  onPress={handleLogin}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <>
+                      <Ionicons name="log-in-outline" size={22} color="#FFF" />
+                      <Text style={styles.loginButtonText}>Login</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </SafeAreaView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
+  container: { flex: 1, backgroundColor: '#FFF' },
+  safeArea: { flex: 1 },
+  scrollContainer: { 
+    paddingHorizontal: 24, 
+    paddingVertical: 20,
+    flexGrow: 1,
   },
+
   backgroundCircles: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     pointerEvents: 'none',
   },
-  circle: {
-    position: 'absolute',
-    borderRadius: 100,
-    backgroundColor: '#FAFAFA',
-  },
-  circle1: {
-    width: 200,
-    height: 200,
-    top: '5%',
-    right: '-10%',
-  },
-  circle2: {
-    width: 150,
-    height: 150,
-    bottom: '15%',
-    left: '-5%',
-  },
-  circle3: {
-    width: 100,
-    height: 100,
-    top: '40%',
-    right: '20%',
-  },
+
   backButton: {
     width: 44,
     height: 44,
@@ -136,16 +185,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F0F0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    marginBottom: 24,
   },
+
   brandContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 40,
     marginBottom: 24,
+    alignItems: 'center',
   },
   logoContainer: {
     width: 60,
@@ -154,75 +201,90 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
     borderWidth: 2,
-    borderColor: '#000000',
+    borderColor: '#000',
+    marginRight: 12,
   },
-  brandText: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#000000',
-    letterSpacing: 1.5,
-  },
+  brandTextContainer: { flexDirection: 'row', alignItems: 'center' },
+  brandText: { fontSize: 32, fontWeight: '900', color: '#000' },
   brandAccent: {
     fontSize: 32,
     fontWeight: '900',
-    backgroundColor: '#000000',
-    color: '#FFFFFF',
+    backgroundColor: '#000',
+    color: '#FFF',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginLeft: 6,
     borderRadius: 6,
-    overflow: 'hidden',
-    letterSpacing: 1,
   },
-  welcomeContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  welcomeTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#000000',
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
-  welcomeSubtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 24,
-    maxWidth: 300,
-  },
-  illustrationContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  credentialsContainer: {
-    backgroundColor: '#FAFAFA',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    marginBottom: 40,
-  },
-  credentialsTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  credentialItem: {
+
+  welcomeContainer: { alignItems: 'center', marginBottom: 40 },
+  welcomeTitle: { fontSize: 28, fontWeight: '800', color: '#000' },
+  welcomeSubtitle: { fontSize: 16, color: '#666', textAlign: 'center', maxWidth: 300 },
+
+  formContainer: { marginBottom: 30 },
+  inputContainer: { marginBottom: 18 },
+  inputLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
+  inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    backgroundColor: '#FAFAFA',
+    borderWidth: 1,
+    borderColor: '#E9E9E9',
+    borderRadius: 12,
+    gap: 12,
+  },
+  input: { flex: 1, paddingVertical: 16, fontSize: 16 },
+
+  errorContainer: {
+    backgroundColor: '#FFF5F5',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FFD5D5',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+  },
+  errorText: { color: '#FF3B30', flex: 1 },
+
+  loginButton: {
+    backgroundColor: '#000',
+    borderRadius: 12,
+    paddingVertical: 18,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loginButtonDisabled: { opacity: 0.7 },
+  loginButtonText: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+
+  quickLoginContainer: {
+    backgroundColor: '#FAFAFA',
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#EEE',
+    marginBottom: 20,
+  },
+  quickLoginTitle: { textAlign: 'center', fontSize: 16, fontWeight: '700', marginBottom: 16 },
+
+  demoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 12,
     marginBottom: 12,
-    paddingHorizontal: 12,
+    gap: 12,
   },
-  credentialText: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 12,
-    fontWeight: '500',
-  },
+  demoButtonTextContainer: { flex: 1 },
+  demoButtonEmail: { fontSize: 14, fontWeight: '600' },
+  demoButtonPassword: { fontSize: 12, color: '#666' },
+
+  footerContainer: { padding: 16 },
+  footerText: { textAlign: 'center', color: '#999', fontSize: 12 },
 });

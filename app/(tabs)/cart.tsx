@@ -50,16 +50,12 @@ const handlePlaceOrder = async () => {
       userEmail: user?.email || 'guest',
     };
 
-    // Add order using context - it now returns the created order
     const newOrder = await addOrder(orderData);
 
-    // Clear cart
     clearCart();
 
-    // Show success toast
     showToast(`Order #${newOrder.id.slice(-6)} placed successfully!`);
 
-    // Navigate to orders
     router.push('/orders');
   } catch (error) {
     showToast('Failed to place order. Please try again.');
@@ -73,7 +69,7 @@ const handlePlaceOrder = async () => {
       
       <View style={styles.itemDetails}>
         <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
-        <Text style={styles.itemPrice}>₹{item.price.toFixed(2)}</Text>
+        <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
         
         <View style={styles.itemActions}>
           <TouchableOpacity
@@ -136,7 +132,7 @@ const handlePlaceOrder = async () => {
         <View style={styles.summaryContainer}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>₹{totalPrice.toFixed(2)}</Text>
+            <Text style={styles.summaryValue}>${totalPrice.toFixed(2)}</Text>
           </View>
           
           <View style={styles.summaryRow}>
@@ -144,19 +140,11 @@ const handlePlaceOrder = async () => {
             <Text style={styles.summaryValue}>
               {totalPrice > 50 ? 'FREE' : '$5.00'}
             </Text>
-          </View>
-          
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Tax</Text>
-            <Text style={styles.summaryValue}>
-              ₹{(totalPrice * 0.08).toFixed(2)}
-            </Text>
-          </View>
-          
+          </View>  
           <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total</Text>
             <Text style={styles.totalValue}>
-              ₹{(totalPrice + (totalPrice > 50 ? 0 : 5) + (totalPrice * 0.08)).toFixed(2)}
+              ${(totalPrice + (totalPrice > 50 ? 0 : 5) + (totalPrice * 0.08)).toFixed(2)}
             </Text>
           </View>
           

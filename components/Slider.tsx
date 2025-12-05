@@ -1,11 +1,11 @@
 import { fetchProducts, type Product } from "@/api/products";
+import SliderCardSkeleton from "@/components/SliderCardSkeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -32,7 +32,7 @@ export default function Slider() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await fetchProducts();
+        const { products: data } = await fetchProducts(1, 50);
         const topK = 8;
         const topProducts: Product[] = [];
 
@@ -93,15 +93,6 @@ const handleAddToCart = (product: Product) => {
 
 
 
-  if (loading) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#000000" />
-        <Text style={styles.loadingText}>Loading Top Products...</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -110,10 +101,12 @@ const handleAddToCart = (product: Product) => {
       </View>
 
       <FlatList
-        data={products}
+        data={loading ? Array(3).fill(null) : products}
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+        keyExtractor={(item, index) =>
+          item?.id?.toString() || `skeleton-${index}`
+        }
         contentContainerStyle={styles.listContainer}
         snapToInterval={CARD_WIDTH + CARD_MARGIN * 2}
         decelerationRate="fast"
@@ -123,70 +116,76 @@ const handleAddToCart = (product: Product) => {
           setActiveIndex(index);
         }}
         scrollEventThrottle={16}
-       renderItem={({ item: product, index }) => {
-  const isInCart = user ? items.some((cartItem) => cartItem.id === product.id) : false;
+        renderItem={({ item: product, index }) => {
+          if (loading) {
+            return <SliderCardSkeleton key={`skeleton-${index}`} />;
+          }
 
-  return (
-    <View style={[styles.card, index === activeIndex && styles.activeCard]}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: product.image }}
-          style={styles.image}
-          resizeMode="contain"
-        />
-        {product.rating?.rate && product.rating.rate > 4.5 && (
-          <View style={styles.badge}>
-            <Ionicons name="trophy" size={14} color="#FFFFFF" />
-            <Text style={styles.badgeText}>Top Rated</Text>
-          </View>
-        )}
-      </View>
+          const isInCart = user ? items.some((cartItem) => cartItem.id === product.id) : false;
 
-      <View style={styles.cardContent}>
-        <Text style={styles.category} numberOfLines={1}>
-          {product.category.toUpperCase()}
-        </Text>
-        <Text style={styles.title} numberOfLines={2}>
-          {product.title}
-        </Text>
+          return (
+            <View style={[styles.card, index === activeIndex && styles.activeCard]}>
+              <View style={styles.imageContainer}>
+                <Image
+                  source={{ uri: product.image }}
+                  style={styles.image}
+                  resizeMode="contain"
+                />
+                {product.rating?.rate && product.rating.rate > 4.5 && (
+                  <View style={styles.badge}>
+                    <Ionicons name="trophy" size={14} color="#FFFFFF" />
+                    <Text style={styles.badgeText}>Top Rated</Text>
+                  </View>
+                )}
+              </View>
 
-        <View style={styles.ratingContainer}>
-          {renderStars(product.rating?.rate || 0)}
-          <Text style={styles.ratingText}>
-            {product.rating?.rate?.toFixed(1)} ({product.rating?.count})
-          </Text>
-        </View>
+              <View style={styles.cardContent}>
+                <Text style={styles.category} numberOfLines={1}>
+                  {product.category.toUpperCase()}
+                </Text>
+                <Text style={styles.title} numberOfLines={2}>
+                  {product.title}
+                </Text>
 
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>₹{product.price.toFixed(2)}</Text>
-          <TouchableOpacity onPress={() => handleAddToCart(product)}>
-            <Ionicons
-              name={isInCart ? "checkmark-circle" : "add-circle"}
-              size={24}
-              color={isInCart ? "#2E8B57" : "#000000"}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+                <View style={styles.ratingContainer}>
+                  {renderStars(product.rating?.rate || 0)}
+                  <Text style={styles.ratingText}>
+                    {product.rating?.rate?.toFixed(1)} ({product.rating?.count})
+                  </Text>
+                </View>
 
-      <View style={styles.cardFooter}>
-        <Text style={styles.footerText}>Free Shipping</Text>
-        <View style={styles.footerDot} />
-        <Text style={styles.footerText}>30-Day Returns</Text>
-      </View>
-    </View>
-  );
-}}
+                <View style={styles.priceContainer}>
+                  <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+                  <TouchableOpacity onPress={() => handleAddToCart(product)}>
+                    <Ionicons
+                      name={isInCart ? "checkmark-circle" : "add-circle"}
+                      size={24}
+                      color={isInCart ? "#2E8B57" : "#000000"}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.cardFooter}>
+                <Text style={styles.footerText}>Free Shipping</Text>
+                <View style={styles.footerDot} />
+                <Text style={styles.footerText}>30-Day Returns</Text>
+              </View>
+            </View>
+          );
+        }}
       />
 
-      <View style={styles.pagination}>
-        {products.map((_, index) => (
-          <View
-            key={index}
-            style={[styles.dot, index === activeIndex ? styles.activeDot : styles.inactiveDot]}
-          />
-        ))}
-      </View>
+      {!loading && (
+        <View style={styles.pagination}>
+          {products.map((_, index) => (
+            <View
+              key={index}
+              style={[styles.dot, index === activeIndex ? styles.activeDot : styles.inactiveDot]}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }

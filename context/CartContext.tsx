@@ -1,4 +1,3 @@
-import { useAuth } from '@/hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useEffect, useState } from 'react';
 
@@ -28,10 +27,9 @@ export const CartContext = createContext<CartContextType>({
 const CART_KEY = 'CART_ITEMS';
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Load cart from AsyncStorage
+
   useEffect(() => {
     (async () => {
       const saved = await AsyncStorage.getItem(CART_KEY);
@@ -39,7 +37,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, []);
 
-  // Save cart to AsyncStorage
   useEffect(() => {
     AsyncStorage.setItem(CART_KEY, JSON.stringify(items));
   }, [items]);

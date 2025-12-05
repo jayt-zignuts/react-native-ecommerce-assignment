@@ -1,4 +1,3 @@
-import { useAuth } from '@/hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useEffect, useState } from 'react';
 
@@ -15,7 +14,6 @@ export const FavContext = createContext<FavoriteContextType | undefined>(undefin
 const FAVORITES_KEY = 'USER_FAVORITES';
 
 export const FavProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
   const [favorites, setFavorites] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
 

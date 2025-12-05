@@ -62,15 +62,6 @@ const OrderDetails = () => {
     });
   };
 
-  const formatShortDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -127,10 +118,10 @@ const OrderDetails = () => {
           {item.title}
         </Text>
         <View style={styles.orderItemDetails}>
-          <Text style={styles.orderItemPrice}>₹{item.price.toFixed(2)}</Text>
+          <Text style={styles.orderItemPrice}>${item.price.toFixed(2)}</Text>
         </View>
         <Text style={styles.orderItemSubtotal}>
-          Subtotal: ₹{(item.price).toFixed(2)}
+          Subtotal: ${(item.price).toFixed(2)}
         </Text>
       </View>
     </View>
@@ -179,8 +170,7 @@ const OrderDetails = () => {
 const subtotal = order.items.reduce((sum: number, item: any) => sum + item.price, 0);
 
 const shipping = subtotal > 500 ? 0 : 40;
-const tax = subtotal * 0.18;
-const total = subtotal + shipping + tax;
+const total = subtotal + shipping;
 
 
   return (
@@ -244,24 +234,19 @@ const total = subtotal + shipping + tax;
             
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>₹{subtotal.toFixed(2)}</Text>
+              <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
             </View>
             
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Shipping</Text>
               <Text style={styles.summaryValue}>
-                {shipping === 0 ? 'FREE' : `₹${shipping.toFixed(2)}`}
+                {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
               </Text>
             </View>
-            
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Tax (18%)</Text>
-              <Text style={styles.summaryValue}>₹{tax.toFixed(2)}</Text>
-            </View>
-            
+
             <View style={[styles.summaryRow, styles.totalRow]}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>₹{total.toFixed(2)}</Text>
+              <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
             </View>
             
             {order.totalPrice > 500 && (

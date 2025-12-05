@@ -1,4 +1,3 @@
-import EditProfileModal from "@/components/EditProfileModal";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
@@ -6,28 +5,46 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useOrders } from "@/hooks/useOrders";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
   Alert,
-  Image,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
-  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const Profile = () => {
-  const { user, logout, updateProfile } = useAuth();
+  const { user, logout } = useAuth();
   const { items: cartItems } = useCart();
   const { favorites } = useFavorites();
   const { orders } = useOrders();
   const router = useRouter();
 
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editMode, setEditMode] = useState<'name' | 'address'>('name');
+  // Get username and initial
+  const username = user?.email ? user.email.split("@")[0] : "Guest";
+  const userInitial = user ? username.charAt(0).toUpperCase() : "G";
+  
+  // Generate a consistent color based on the initial
+  const getInitialColor = (initial: string) => {
+    const colors = [
+      "#FF6B6B", // Red
+      "#4ECDC4", // Teal
+      "#FFD166", // Yellow
+      "#06D6A0", // Green
+      "#118AB2", // Blue
+      "#7209B7", // Purple
+      "#EF476F", // Pink
+      "#073B4C", // Dark Blue
+    ];
+    
+    const charCode = initial.charCodeAt(0);
+    return colors[charCode % colors.length];
+  };
+  
+  const initialColor = getInitialColor(userInitial);
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -44,46 +61,7 @@ const Profile = () => {
   };
 
   const handleNavigate = (screen: string) => {
-    if (screen === "address") {
-      // Show edit address modal
-      setEditMode('address');
-      setEditModalVisible(true);
-      return;
-    }
-    router.push(`/${screen}` as unknown as any);
-  };
-
-  const showToast = (message: string) => {
-    if (Platform.OS === "android") {
-      ToastAndroid.show(message, ToastAndroid.SHORT);
-    } else {
-      Alert.alert("Notice", message);
-    }
-  };
-
-  const handleEditProfile = () => {
-    setEditMode('name');
-    setEditModalVisible(true);
-  };
-
-  const handleSaveProfile = async (newName: string, newAddress?: string) => {
-    try {
-      const updates: { name?: string; address?: string } = {};
-      if (newName && newName !== user?.name) {
-        updates.name = newName;
-      }
-      if (newAddress !== undefined && newAddress !== user?.address) {
-        updates.address = newAddress;
-      }
-      
-      if (Object.keys(updates).length > 0) {
-        await updateProfile(updates);
-        showToast("Profile updated successfully!");
-      }
-    } catch (error) {
-      showToast("Failed to update profile. Please try again.");
-      console.error("Profile update error:", error);
-    }
+    router.push(`/${screen}` as any);
   };
 
   const menuItems = [
@@ -92,57 +70,39 @@ const Profile = () => {
       title: "My Orders",
       subtitle: "View your order history",
       screen: "orders",
-      badge: orders.length,
+      badge: orders?.length || 0,
     },
     {
       icon: "heart-outline" as const,
       title: "My Favourites",
       subtitle: "Saved items",
-      screen: "favourites",
-      badge: favorites.length,
-    },
-    {
-      icon: "location-outline" as const,
-      title: "Shipping Address",
-      subtitle: user?.address || "No address set. Tap to add.",
-      screen: "address",
+      screen: "favorites",
+      badge: favorites?.length || 0,
     },
   ];
 
   return (
     <ProtectedRoute>
       <View style={styles.container}>
-        {/* Edit Profile Modal */}
-        <EditProfileModal
-          visible={editModalVisible}
-          onClose={() => setEditModalVisible(false)}
-          onSuccess={handleSaveProfile}
-          currentName={user?.name || "Guest User"}
-          currentAddress={user?.address || ""}
-          initialTab={editMode}
-        />
-
         {/* Profile Header */}
         <View style={styles.header}>
           <View style={styles.profileInfo}>
-            <Image
-              source={{
-                uri: user?.profileImage,
-              }}
-              style={styles.profileImage}
-            />
+            <View style={styles.imageContainer}>
+              {user ? (
+                <View style={[styles.userInitialContainer, { backgroundColor: initialColor }]}>
+                  <Text style={styles.userInitialText}>{userInitial}</Text>
+                </View>
+              ) : (
+                <View style={styles.guestIcon}>
+                  <Icon name="person-outline" size={28} color="#000" />
+                </View>
+              )}
+            </View>
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{user?.name || "Guest User"}</Text>
-              <Text style={styles.userEmail}>{user?.email}</Text>
+              <Text style={styles.userEmail}>{user?.email || "guest@example.com"}</Text>
             </View>
           </View>
-
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={handleEditProfile}
-          >
-            <Ionicons name="create-outline" size={20} color="#000000" />
-          </TouchableOpacity>
         </View>
 
         {/* Stats Overview */}
@@ -187,17 +147,25 @@ const Profile = () => {
                 </View>
               </View>
               <View style={styles.menuItemRight}>
-                {item.badge && item.badge > 0 && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{item.badge}</Text>
-                  </View>
+                {item.badge > 0 ? (
+                  <>
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{item.badge}</Text>
+                    </View>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color="#666"
+                      style={{ marginLeft: 12 }}
+                    />
+                  </>
+                ) : (
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color="#666"
+                  />
                 )}
-                <Ionicons
-                  name="chevron-forward"
-                  size={20}
-                  color="#666"
-                  style={{ marginLeft: 12 }}
-                />
               </View>
             </TouchableOpacity>
           ))}
@@ -225,86 +193,63 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 20,
-    paddingVertical: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
+    paddingVertical: 24,
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
   },
   profileInfo: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
   },
-  profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: "#000000",
+  imageContainer: {
     marginRight: 16,
+  },
+  userInitialContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 3,
+    borderColor: "#000",
+  },
+  userInitialText: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+  guestIcon: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "#F0F0F0",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 3,
+    borderColor: "#000",
   },
   userInfo: {
     flex: 1,
   },
   userName: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "800",
     color: "#000000",
     marginBottom: 4,
-    letterSpacing: 0.3,
   },
   userEmail: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#666",
-    marginBottom: 8,
     fontWeight: "500",
-  },
-  statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F0FFF4",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#E0FFE9",
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#4CD964",
-    marginRight: 6,
-  },
-  statusText: {
-    fontSize: 12,
-    color: "#2E8B57",
-    fontWeight: "600",
-  },
-  editButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#F0F0F0",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
   },
   statsContainer: {
     backgroundColor: "#FFFFFF",
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 20,
-    marginBottom: 8,
+    marginVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
   },
@@ -330,78 +275,6 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: "#F0F0F0",
   },
-  addressCard: {
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 20,
-    marginVertical: 16,
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  addressHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  addressTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#000000",
-    marginLeft: 12,
-    flex: 1,
-  },
-  addressEditButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#F8F8F8",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  addressText: {
-    fontSize: 15,
-    color: "#000000",
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-  addressFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  addressTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F0FFF4",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E0FFE9",
-    gap: 6,
-  },
-  addressTagText: {
-    fontSize: 12,
-    color: "#2E8B57",
-    fontWeight: "600",
-  },
-  addressType: {
-    fontSize: 13,
-    color: "#666",
-    fontWeight: "500",
-    backgroundColor: "#FAFAFA",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
   menuContainer: {
     flex: 1,
   },
@@ -414,7 +287,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 18,
     borderBottomWidth: 1,
     borderBottomColor: "#F8F8F8",
   },
@@ -424,9 +297,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: "#F8F8F8",
     justifyContent: "center",
     alignItems: "center",
@@ -454,11 +327,12 @@ const styles = StyleSheet.create({
   },
   badge: {
     backgroundColor: "#000000",
-    width: 24,
+    minWidth: 24,
     height: 24,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 6,
   },
   badgeText: {
     color: "#FFFFFF",

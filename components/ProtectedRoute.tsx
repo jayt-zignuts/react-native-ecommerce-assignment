@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'expo-router';
-import React, { ReactNode, useEffect } from 'react';
+import { router } from 'expo-router';
+import React, { ReactNode, useEffect, useState } from 'react';
+import LoginModal from './LoginModal';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -8,19 +9,35 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace('/login'); 
+      setShowModal(true);
+    } else {
+      setShowModal(false);
     }
   }, [user, loading]);
 
-  if (!user) {
+  const handleClose = () => {
+    setShowModal(false);
+    router.push('/');
+  };
+
+  if (loading) {
     return null;
   }
 
-  return <>{children}</>;
+  if (user) {
+    return <>{children}</>;
+  }
+
+  return (
+    <LoginModal
+      visible={showModal}
+      onClose={handleClose}
+    />
+  );
 };
 
 export default ProtectedRoute;

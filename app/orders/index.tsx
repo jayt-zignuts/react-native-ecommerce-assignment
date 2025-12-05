@@ -1,14 +1,16 @@
 import Header from "@/components/Header";
+import OrderCardSkeleton from "@/components/OrderCardSkeleton";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useOrders } from "@/hooks/useOrders";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
-import React, { useLayoutEffect } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Image,
+  RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -25,7 +27,8 @@ const navigation = useNavigation();
       }, [navigation]);
 
   const router = useRouter();
-  const { orders, loading, clearOrders } = useOrders();
+  const { orders, loading, clearOrders, refreshOrders } = useOrders();
+  const [refreshing, setRefreshing] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -70,6 +73,15 @@ const navigation = useNavigation();
         },
       ]
     );
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshOrders();
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const renderOrderItem = ({ item }: { item: any }) => (
@@ -120,7 +132,7 @@ const navigation = useNavigation();
               </Text>
               <View style={styles.productDetails}>
                 <Text style={styles.productPrice}>
-                  ₹{product.price.toFixed(2)}
+                  ${product.price.toFixed(2)}
                 </Text>
                 {product.quantity > 1 && (
                   <Text style={styles.quantityText}>×{product.quantity}</Text>
@@ -139,7 +151,7 @@ const navigation = useNavigation();
       <View style={styles.orderFooter}>
         <Text style={styles.totalLabel}>Total</Text>
         <View style={styles.totalContainer}>
-          <Text style={styles.totalPrice}>₹{item.totalPrice.toFixed(2)}</Text>
+          <Text style={styles.totalPrice}>${item.totalPrice.toFixed(2)}</Text>
           <Ionicons name="chevron-forward" size={16} color="#666" />
         </View>
       </View>
@@ -204,15 +216,31 @@ if (loading) {
           </View>
         </View>
 
-        {orders.length === 0 ? (
+        {orders.length === 0 && !refreshing ? (
           <EmptyOrders />
         ) : (
           <FlatList
-            data={orders}
-            renderItem={renderOrderItem}
-            keyExtractor={(item) => item.id}
+            data={refreshing ? Array(3).fill(null) : orders}
+            renderItem={({ item, index }) => 
+              refreshing ? (
+                <OrderCardSkeleton />
+              ) : (
+                renderOrderItem({ item })
+              )
+            }
+            keyExtractor={(item, index) => 
+              refreshing ? `skeleton-${index}` : item.id
+            }
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl 
+                refreshing={false} 
+                onRefresh={onRefresh}
+                tintColor="transparent"
+                colors={["transparent"]}
+              />
+            }
           />
         )}
       </SafeAreaView>

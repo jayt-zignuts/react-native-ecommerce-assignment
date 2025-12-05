@@ -22,7 +22,6 @@ const NotFound = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Error Illustration */}
         <View style={styles.illustrationContainer}>
           <View style={styles.errorBadge}>
             <Ionicons name="alert-circle" size={60} color="#FF3B30" />
@@ -40,7 +39,6 @@ const NotFound = () => {
           </Text>
         </View>
 
-        {/* Action Buttons */}
         <View style={styles.actionButtons}>
           <TouchableOpacity
             style={styles.primaryButton}
