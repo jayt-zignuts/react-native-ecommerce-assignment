@@ -4,19 +4,6 @@ This is a **React Native e-commerce application** built using **Expo** and **Exp
 
 ---
 
-## Table of Contents
-
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Authentication](#authentication)
-- [Quick Login / Demo Accounts](#quick-login--demo-accounts)
-- [Dependencies](#dependencies)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
 ## Features
 
 - User authentication with login screen.
