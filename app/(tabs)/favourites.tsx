@@ -1,6 +1,6 @@
 import { fetchProducts, Product } from "@/api/products";
-import FavouriteCardSkeleton from "@/components/FavouriteCardSkeleton";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import FavouriteCardSkeleton from "@/components/Skeletons/FavouriteCardSkeleton";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";

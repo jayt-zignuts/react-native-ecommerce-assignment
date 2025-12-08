@@ -1,5 +1,4 @@
 import { fetchProducts, type Product } from "@/api/products";
-import SliderCardSkeleton from "@/components/SliderCardSkeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import SliderCardSkeleton from "./Skeletons/SliderCardSkeleton";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.65;

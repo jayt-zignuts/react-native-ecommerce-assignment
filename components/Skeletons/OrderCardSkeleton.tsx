@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Skeleton from './Skeleton';
+import Skeleton from './Skeletons/Skeleton';
 
 const OrderCardSkeleton = () => {
   return (

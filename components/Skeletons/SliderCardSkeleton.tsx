@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import Skeleton from './Skeleton';
+import Skeleton from './Skeletons/Skeleton';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.65;
@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
 });
 
 export default SliderCardSkeleton;
+
 
 
 

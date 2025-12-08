@@ -1,6 +1,6 @@
 import { fetchProductById, Product } from "@/api/products";
-import ProductDetailsSkeleton from "@/components/ProductDetailsSkeleton";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ProductDetailsSkeleton from "@/components/Skeletons/ProductDetailsSkeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";

@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { router } from 'expo-router';
 import React, { ReactNode, useEffect, useState } from 'react';
-import LoginModal from './LoginModal';
+import LoginModal from './Modals/LoginModal';
 
 interface ProtectedRouteProps {
   children: ReactNode;

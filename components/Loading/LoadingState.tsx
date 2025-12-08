@@ -1,6 +1,6 @@
 import React from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
-import FavouriteCardSkeleton from "./FavouriteCardSkeleton";
+import FavouriteCardSkeleton from "../Skeletons/FavouriteCardSkeleton";
 
 export const LoadingState = () => (
   <View style={styles.safeArea}>

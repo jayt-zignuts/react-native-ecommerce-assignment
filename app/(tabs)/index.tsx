@@ -1,7 +1,7 @@
 import { fetchProducts, Product } from '@/api/products';
-import { LoadingState } from '@/components/LoadingState';
+import { LoadingState } from '@/components/Loading/LoadingState';
 import ProductCard from '@/components/ProductCard';
-import ProductCardSkeleton from '@/components/ProductCardSkeleton';
+import ProductCardSkeleton from '@/components/Skeletons/ProductCardSkeleton';
 import Slider from '@/components/Slider';
 import React, { useCallback, useEffect, useState } from 'react';
 import {

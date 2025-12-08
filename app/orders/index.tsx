@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
-import OrderCardSkeleton from "@/components/OrderCardSkeleton";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import OrderCardSkeleton from "@/components/Skeletons/OrderCardSkeleton";
 import { useOrders } from "@/hooks/useOrders";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
