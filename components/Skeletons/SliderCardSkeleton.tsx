@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import Skeleton from './Skeletons/Skeleton';
+import Skeleton from './Skeleton';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.65;
