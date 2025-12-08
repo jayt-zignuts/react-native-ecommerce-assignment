@@ -10,27 +10,24 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
   const [showModal, setShowModal] = useState(false);
+  const [hasClosed, setHasClosed] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !hasClosed) {
       setShowModal(true);
     } else {
       setShowModal(false);
     }
-  }, [user, loading]);
+  }, [user, loading, hasClosed]);
 
   const handleClose = () => {
+    setHasClosed(true); 
     setShowModal(false);
     router.push('/');
   };
 
-  if (loading) {
-    return null;
-  }
-
-  if (user) {
-    return <>{children}</>;
-  }
+  if (loading) return null;
+  if (user) return <>{children}</>;
 
   return (
     <LoginModal
@@ -39,5 +36,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     />
   );
 };
+
 
 export default ProtectedRoute;
